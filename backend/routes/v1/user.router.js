@@ -2,7 +2,7 @@ const { Router } = require("express");
 const jwt = require("jsonwebtoken");
 const z = require("zod");
 
-const { User } = require("../../db");
+const { User, Account } = require("../../db");
 const { jwtSecret, saltRounds } = require("../../config");
 const { hashPassword, comparePassword } = require("../../utils/authUtils");
 const userAuthMiddleware = require("../../middlewares/user/userAuth.middleware");
@@ -55,6 +55,14 @@ router.post("/signup", async (req, res) => {
         password: hashedPassword,
         firstName,
         lastName,
+      });
+
+      const userId = user._id;
+
+      // when a new user signs up initialise their balance with 100000
+      const accountDetails = await Account.create({
+        userId,
+        balance: 100000,
       });
 
       res.json({
@@ -216,7 +224,7 @@ router.get("/list", userAuthMiddleware, async (req, res) => {
         username: user.username,
         firstName: user.firstName,
         lastName: user.lastName,
-        userId: user._id
+        userId: user._id,
       })),
     });
   } catch (error) {
