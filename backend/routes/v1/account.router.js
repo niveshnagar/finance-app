@@ -30,7 +30,13 @@ router.get("/balance", userAuthMiddleware, async (req, res) => {
 
 // Route -
 router.post("/transfer", userAuthMiddleware, async (req, res) => {
+  // create a session
+  const session = await mongoose.startSession();
+
   try {
+    // start the transaction
+    session.startTransaction();
+
     const transactionBodySchema = z.object({
       receiverId: z
         .string()
@@ -41,12 +47,6 @@ router.post("/transfer", userAuthMiddleware, async (req, res) => {
         }),
       amount: z.number(),
     });
-
-    // create a session
-    const session = await mongoose.startSession();
-
-    // start the transaction
-    session.startTransaction();
 
     // 1. Make sure the payload has correct inputs
 
@@ -113,7 +113,7 @@ router.post("/transfer", userAuthMiddleware, async (req, res) => {
       message: "Transfer successful.",
     });
   } catch (error) {
-    console.log("error: ", error);
+    await session.abortTransaction();
 
     return res.status(500).json({
       message: "Oops something went wrong!1",
