@@ -62,7 +62,7 @@ router.post("/signup", async (req, res) => {
       // when a new user signs up initialise their balance with 100000
       const accountDetails = await Account.create({
         userId,
-        balance: 100000,
+        balance: 10000000,
       });
 
       res.json({

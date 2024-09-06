@@ -28,7 +28,7 @@ router.get("/balance", userAuthMiddleware, async (req, res) => {
   }
 });
 
-// Route -
+// Route - Endpoint to transfer funds from one account to other.
 router.post("/transfer", userAuthMiddleware, async (req, res) => {
   // create a session
   const session = await mongoose.startSession();
