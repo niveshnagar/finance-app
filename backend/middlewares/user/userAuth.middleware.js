@@ -12,7 +12,6 @@ const userAuthMiddleware = async (req, res, next) => {
     }
     const words = authHeader.split(" ");
     const jwtToken = words[1];
-    console.log("Bearer JWT Token: ", jwtToken);
 
     try {
       const decodedValue = jwt.verify(jwtToken, jwtSecret);
