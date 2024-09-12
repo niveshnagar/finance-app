@@ -203,7 +203,6 @@ router.put("/updateuser", userAuthMiddleware, async (req, res) => {
 router.get("/list", userAuthMiddleware, async (req, res) => {
   try {
     const queryParam = req.query.filter || "";
-    console.log("queryParam: ", queryParam);
     const users = await User.find({
       $or: [
         {
@@ -226,6 +225,28 @@ router.get("/list", userAuthMiddleware, async (req, res) => {
         lastName: user.lastName,
         userId: user._id,
       })),
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Oops something went wrong!",
+    });
+  }
+});
+
+router.get("/userId", userAuthMiddleware, async (req, res) => {
+  try {
+    const userId = req.query.id;
+    const user = await User.findOne({ _id: userId });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User does not exist.",
+      });
+    }
+    const { firstName, lastName, id } = user;
+    res.status(200).json({
+      message: "User found.",
+      user: { firstName, lastName, id },
     });
   } catch (error) {
     res.status(500).json({

@@ -59,6 +59,7 @@ router.post("/transfer", userAuthMiddleware, async (req, res) => {
     }
 
     const { receiverId, amount } = req.body;
+    const amountInPaisa = amount * 100;
 
     // 2. Make sure the receiverId's account exists
 
@@ -85,9 +86,11 @@ router.post("/transfer", userAuthMiddleware, async (req, res) => {
     }).session(session);
     const accountBalance = senderAccountInfo.balance;
 
-    if (!senderAccountInfo || accountBalance < amount) {
+    if (!senderAccountInfo || accountBalance < amountInPaisa) {
       // abort the transaction if the user does not have suffiecient funds
       await session.abortTransaction();
+      session.endSession();
+
       return res.status(400).json({
         message: "Insufficient balance.",
       });
@@ -98,22 +101,25 @@ router.post("/transfer", userAuthMiddleware, async (req, res) => {
     // Deduct the amount from the sender
     const updatedSender = await Account.findOneAndUpdate(
       { userId: senderId },
-      { $inc: { balance: -amount } }
+      { $inc: { balance: -amountInPaisa } }
     ).session(session);
 
     // Add the amount to the receiverId's account
     const updatedReceiver = await Account.findOneAndUpdate(
       { userId: receiverId },
-      { $inc: { balance: amount } }
+      { $inc: { balance: amountInPaisa } }
     ).session(session);
 
     // commit the transaction
-    session.commitTransaction();
+    await session.commitTransaction();
+    session.endSession();
+
     res.status(200).json({
       message: "Transfer successful.",
     });
   } catch (error) {
     await session.abortTransaction();
+    session.endSession();
 
     return res.status(500).json({
       message: "Oops something went wrong!1",

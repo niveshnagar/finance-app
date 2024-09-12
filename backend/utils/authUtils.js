@@ -9,7 +9,6 @@ const hashPassword = async (password) => {
 const comparePassword = async (plainPassword, hashedPassword) => {
   try {
     const isValid = await bcrypt.compare(plainPassword, hashedPassword);
-    console.log('isValid: ', isValid);
     if (isValid) {
       return true;
     }
