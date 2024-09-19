@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useSetRecoilState } from "recoil";
 
 import Heading from "../components/Heading";
 import Subheading from "../components/Subheading";
@@ -8,10 +9,30 @@ import InputBox from "../components/InputBox";
 import Button from "../components/Button";
 import BottomWarning from "../components/BottomWarning";
 
+import userAtom from "../store/atoms/user.atom";
+
 const Signin = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const setLoggedinUser = useSetRecoilState(userAtom);
+
+  // if the user has signed in, store his info in a global state;
+  const getSignedinUser = async (authToken) => {
+    const response = await axios.get(
+      "http://localhost:3000/api/v1/user/userinfo",
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      }
+    );
+    if (response.status !== 200) return;
+
+    const signedinUser = response?.data?.user;
+    const { username } = signedinUser;
+    setLoggedinUser(username);
+  };
 
   const handleSubmit = async () => {
     const response = await axios.post(
@@ -19,7 +40,9 @@ const Signin = () => {
       { username, password }
     );
     if (response.data?.token) {
-      localStorage.setItem("token", response.data.token);
+      const authToken = response.data.token;
+      localStorage.setItem("token", authToken);
+      getSignedinUser(authToken);
       navigate("/dashboard");
     }
   };

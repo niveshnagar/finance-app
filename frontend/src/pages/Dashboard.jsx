@@ -1,20 +1,63 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 
 import NavBar from "../components/NavBar";
 
 const Dashboard = () => {
-  const [username, setUsername] = useState("SubaRashi");
-  const [firstName, setFirstName] = useState("Rashi");
-  const [lastName, setLastName] = useState("Singh");
-  const [balance, setBalance] = useState(100000);
+  // TODO -  replace with useReducer for cleaner code
+  const [username, setUsername] = useState();
+  const [firstName, setFirstName] = useState();
+  const [lastName, setLastName] = useState("");
+  const [balance, setBalance] = useState("");
   const [users, setUsers] = useState([]);
   const inputFilter = useRef();
 
-  const getUserInfo = async () => {
+  const authToken = localStorage.getItem("token");
+
+  useEffect(() => {
+    // Make a backend call to get following info about the user
+
+    // TODO - firstname, lastname of logged in user
+    const getSignedinUser = async () => {
+      const response = await axios.get(
+        "http://localhost:3000/api/v1/user/userinfo",
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      );
+      if (response.status !== 200) return;
+
+      const signedinUser = response?.data?.user;
+      const { firstName, lastName, username } = signedinUser;
+      setFirstName(firstName);
+      setLastName(lastName);
+      setUsername(username);
+    };
+    getSignedinUser();
+
+    // TODO - wallet balamce of the logged in user
+    const getAccountBalance = async () => {
+      const response = await axios.get(
+        "http://localhost:3000/api/v1/account/balance",
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      );
+      if (response.status !== 200) return;
+
+      const balance = response?.data?.balance;
+      setBalance(balance);
+    };
+    getAccountBalance();
+  }, []);
+
+  const getUsers = async () => {
     const filterQuery = inputFilter.current.value;
-    const authToken = localStorage.getItem("token");
     const response = await axios.get("http://localhost:3000/api/v1/user/list", {
       params: {
         filter: filterQuery,
@@ -29,14 +72,14 @@ const Dashboard = () => {
 
   return (
     <div className="bg-slate-200 h-screen">
-      <NavBar user={"Rashi"} />
+      <NavBar />
       <div className="flex flex-col text-xl font-medium px-4 text-black">
         <p className="text-2xl font-bold">Account Info: </p>
         <div className=" ">
           <p>UserId: {username}</p>
           <p>First Name: {firstName}</p>
           <p>Last Name: {lastName}</p>
-          <p>Balance: {balance}</p>
+          <p>Wallet Balance: &#8377; {(balance / 100).toFixed(2)}</p>
         </div>
       </div>
       <div className=" bg-slate-400 px-4 py-4">
@@ -47,7 +90,7 @@ const Dashboard = () => {
         />
         <button
           className="rounded bg-gray-800 text-white px-4 py-2 ml-4"
-          onClick={getUserInfo}
+          onClick={getUsers}
         >
           Search
         </button>

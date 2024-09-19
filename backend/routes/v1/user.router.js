@@ -141,6 +141,29 @@ router.post("/signin", async (req, res) => {
   }
 });
 
+router.get("/userinfo", userAuthMiddleware, async (req, res) => {
+  try {
+    // get the username of the user for which info is needed
+    const username = req.username;
+
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found!",
+      });
+    }
+    const { firstName, lastName } = user;
+    res.json({
+      message: "User found",
+      user: { firstName, lastName, username },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Oops something went wrong.",
+    });
+  }
+});
+
 router.put("/updateuser", userAuthMiddleware, async (req, res) => {
   try {
     // define schema for put request
