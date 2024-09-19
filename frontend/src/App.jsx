@@ -5,6 +5,7 @@ import Signin from "./pages/Signin";
 import Dashboard from "./pages/Dashboard";
 import SendMoney from "./pages/SendMoney";
 import { RecoilRoot } from "recoil";
+import PrivateRoutes from "./components/PrivateRoutes";
 
 function App() {
   return (
@@ -12,10 +13,13 @@ function App() {
       <RecoilRoot>
         <BrowserRouter>
           <Routes>
-            <Route path="/signup" element={<Signup />}></Route>
+            <Route path="/" element={<PrivateRoutes />}>
+              <Route path="/signup" element={<Signup />}></Route>
+              <Route path="/dashboard" element={<Dashboard />}></Route>
+              <Route path="/sendmoney" element={<SendMoney />}></Route>
+            </Route>
+
             <Route path="/signin" element={<Signin />}></Route>
-            <Route path="/dashboard" element={<Dashboard />}></Route>
-            <Route path="/sendmoney" element={<SendMoney />}></Route>
           </Routes>
         </BrowserRouter>
       </RecoilRoot>
